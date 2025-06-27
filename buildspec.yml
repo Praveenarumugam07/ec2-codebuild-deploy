@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - pip install -r requirements.txt
+  build:
+    commands:
+      - echo "Build completed"
+  post_build:
+    commands:
+      - echo "Deploying to EC2"
+      - chmod 400 ec2-key.pem
+      - scp -o StrictHostKeyChecking=no -i ec2-key.pem app.py ec2-user@52.66.205.153:/home/ec2-user/
+      - ssh -o StrictHostKeyChecking=no -i ec2-key.pem ec2-user@52.66.205.153 "sudo pkill -f app.py || true && nohup sudo python3 /home/ec2-user/app.py &"
+artifacts:
+  files:
+    - '**/*'
